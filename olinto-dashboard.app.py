@@ -3,22 +3,33 @@ import pandas as pd
 
 st.set_page_config(page_title="Inversysa Nicaragua - Inventario", layout="wide")
 
-# SUSTITUYE ESTE LINK POR EL TUYO TERMINANDO EN /export?format=csv
-sheet_url ="https://docs.google.com/spreadsheets/d/TU_CODIGO_LARGO/export?format=csv"
+# 1. PEGA TU LINK AQUÍ (Asegúrate de que termine en /export?format=csv)
+sheet_url = "TU_LINK_AQUI"
 
 st.title("📊 Control de Inventario Inversysa")
 
 @st.cache_data
 def load_data(url):
-    # Esto lee tu Google Sheet directamente
     return pd.read_csv(url)
 
 try:
     df = load_data(sheet_url)
-    st.success("✅ Datos cargados correctamente desde Google Sheets")
+    st.success("✅ ¡Datos cargados exitosamente!")
     
-    # Aquí puedes ver tus marcas: Shinko, Nayasa, Bajaj, etc.
-    st.dataframe(df, use_container_width=True)
+    # 2. BUSCADOR SIMPLE
+    st.subheader("Buscador de Productos")
+    busqueda = st.text_input("Escribe el nombre de la llanta o repuesto:")
     
+    if busqueda:
+        # Filtra en todas las columnas por lo que escribas
+        mask = df.apply(lambda row: row.astype(str).str.contains(busqueda, case=False).any(), axis=1)
+        df_final = df[mask]
+    else:
+        df_final = df
+
+    # 3. MUESTRA TU EXCEL TAL CUAL ES
+    st.dataframe(df_final, use_container_width=True)
+
 except Exception as e:
-    st.error("⚠️ Error: Asegúrate de que el link en el código termine en /export?format=csv y que la hoja sea pública.")
+    st.error(f"Error al leer los datos: {e}")
+    st.info("Revisa que el link termine en /export?format=csv")
